@@ -10,7 +10,7 @@ layout: none
 <h1>Index of /</h1>
 <ul>
 {% for file in site.static_files %}
-  <li><a href="{{ file.path | remove_first: '/' }}">{{ file.path }}</a></li>
+  <li><a href="{{ file.path | remove_first: '/' }}">{{ file.path | remove_first: '/'}}</a></li>
 {% endfor %}
 </ul>
 </body>
