@@ -9,6 +9,7 @@ layout: none
 <body>
 <h1>Index of /</h1>
 <ul>
+  <li><a href="netboot.xyz-custom/">netboot.xyz-custom/</a></li>
 {% for file in site.static_files %}
   <li><a href="{{ file.path | remove_first: '/' }}">{{ file.path | remove_first: '/'}}</a></li>
 {% endfor %}
