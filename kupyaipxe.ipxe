@@ -1,0 +1,273 @@
+#!ipxe
+
+##########################################
+# iPXE Boot Menu — collabnet.local
+##########################################
+
+set crosscert http://192.168.1.1/ca.pem
+
+colour --rgb 0xf9efe9 1 #highlighter
+colour --rgb 0xe79088 7 #text
+colour --rgb 0xc2d1b1 6 #menu text
+cpair --foreground 7 --background 1 6
+
+:start
+imgfree
+console --picture http://192.168.1.1/main.png
+menu Boot Menu - (${ip})
+item --gap         -- Windows
+item windows       Windows installers
+item --gap         -- Linux
+item ubuntu        Ubuntu
+item debian	   Debian 
+item archy         Arch
+item --gap         -- Other
+item kolibri       KolibriOS
+item tinker        TinkerOS
+item --gap         -- Useful PXE boots 
+item netbootxyz    netboot.xyz
+#item salstar       SAL's Network Boot
+item --gap         -- Utilities 
+item local         Boot from local disk
+item reboot        Reboot
+item shell	   iPXE Shell
+choose --default ubuntu target && goto ${target} || goto shell
+
+##########################################
+
+:netbootxyz
+set version 3.x
+imgfree
+console --picture http://192.168.1.1/netbootxyz.png
+boot http://192.168.1.1/nmenu.ipxe || goto start
+
+:archy
+imgfree
+console --picture http://192.168.1.1/arch.png
+boot archlinux.ipxe || goto start
+goto start
+
+:salstar
+set boot_salstar_version 1
+set imgverify echo
+set imgtrust echo
+boot http://192.168.1.1/bmenu.ipxe
+
+:local
+echo Booting local disk...
+exit 0
+
+:reboot
+reboot
+	
+:shell
+shell
+goto start
+
+:windows
+imgfree
+console --picture http://192.168.1.1/windows.png
+menu Windows
+item windowspe         Windows 7 to Windows 11 (excluding Vista and 10)
+item windowspe64       Windows XP (64-bit) - Old only
+item windowspe32       Windows XP (32-bit) - Old only
+item win2k             Windows 2000 - Old only (key: DDTPV-TXMX7-BBGJ9-WGY8K-B9GHM)
+choose --default windowspe target && goto ${target} || goto start
+
+:win2k
+kernel win2k.0
+boot
+
+:windowspe
+cpuid --ext 29 && set arch amd64 || set arch x86
+kernel wimboot
+initrd install.bat install.bat
+initrd winpeshl.ini winpeshl.ini
+#initrd http://192.168.1.1/aik/ISO/boot/bcd BCD
+#initrd http://192.168.1.1/aik/ISO/boot/boot.sdi boot.sdi
+#initrd -n boot.wim http://192.168.1.1/aik/winpe.wim boot.wim
+initrd http://192.168.1.1/amd64bak/media/Boot/BCD BCD
+initrd http://192.168.1.1/amd64bak/media/Boot/boot.sdi boot.sdi
+initrd -n boot.wim http://192.168.1.1/amd64bak/media/sources/boot.wim boot.wim
+boot
+
+:windowspe32
+cpuid --ext 29 && set arch amd64 || set arch x86
+kernel wimboot
+initrd install32.bat install.bat
+initrd winpeshl.ini winpeshl.ini
+initrd http://192.168.1.1/aik32/ISO/boot/bcd BCD
+initrd http://192.168.1.1/aik32/ISO/boot/boot.sdi boot.sdi
+initrd -n boot.wim http://192.168.1.1/aik32/winpe.wim boot.wim
+boot
+
+:windowspe64
+cpuid --ext 29 && set arch amd64 || set arch x86
+kernel wimboot
+initrd install64.bat install.bat
+initrd winpeshl.ini winpeshl.ini
+initrd http://192.168.1.1/aik/ISO/boot/bcd BCD
+initrd http://192.168.1.1/aik/ISO/boot/boot.sdi boot.sdi
+initrd -n boot.wim http://192.168.1.1/aik/winpe.wim boot.wim
+boot
+
+:kolibri
+imgfree
+kernel memdisk
+initrd kolibri.img
+boot
+
+:tinker
+imgfree
+kernel memdisk iso
+initrd tinker.img
+boot
+
+:ubuntu
+imgfree
+console --picture http://192.168.1.1/ubuntu.png
+menu Ubuntu
+item --gap         -- Currently LTS
+item noble	   Version 24.04 (Noble Numbat) 
+item jammy	   Version 22.04 (Jammy Jellyfish) 
+item focal	   Version 20.04 (Focal Fossa)
+item bionic	   Version 18.04 (Bionic Beaver)
+item xenial	   Version 16.04 (Xenial Xerus)
+item trusty	   Version 14.04 (Trusty Tahr)
+item --gap         -- No longer in support
+item --gap         IMPORTANT: Use archive 'old-releases.ubuntu.com'
+item precise       Version 12.04 (Precise Pangolin)
+item lucid	   Version 10.04 (Lucid Lynx)
+item hardy	   Version 8.04 (Hardy Heron)
+#item dapper        Version 6.06 (Dapper Drake)
+choose --default noble target && goto ${target} || goto start
+
+:debian
+imgfree
+console --picture http://192.168.1.1/debian.png
+menu Debian
+item --gap	   -- Currently LTS
+item debian13	   Debian 13 (Trixie)
+item debian12	   Debian 12 (Bookworm)
+item --gap	   -- No longer in support
+item --gap	   IMPORTANT: Use archive 'archive.debian.org'
+item debian11	   Debian 11 (Bullseye)
+item debian10      Debian 10 (Buster)
+item debian9       Debian 9 (Stretch)
+item debian8	   Debian 8 (Jessie)
+item debian7	   Debian 7 (Wheezy)
+item debian6	   Debian 6 (Squeeze)
+item debian5	   Debian 5 (Lenny)
+item debian4	   Debian 4 (Etch)
+choose --default wait target && goto ${target} || goto start
+
+:debian4
+kernel http://192.168.1.1/debian/4/linux mirror/country=manual mirror/http/hostname=archive.debian.org mirror/http/directory=/debian  debian-installer/allow_unauthenticated=true ip=dhcp
+initrd http://192.168.1.1/debian/4/initrd
+boot
+
+:debian5
+kernel http://192.168.1.1/debian/5/linux mirror/country=manual mirror/http/hostname=archive.debian.org mirror/http/directory=/debian  debian-installer/allow_unauthenticated=true ip=dhcp
+initrd http://192.168.1.1/debian/5/initrd
+boot
+
+:debian6
+kernel http://192.168.1.1/debian/6/linux mirror/country=manual mirror/http/hostname=archive.debian.org mirror/http/directory=/debian  debian-installer/allow_unauthenticated=true ip=dhcp
+initrd http://192.168.1.1/debian/6/initrd
+boot
+
+:debian7
+kernel http://192.168.1.1/debian/7/linux mirror/country=manual mirror/http/hostname=archive.debian.org mirror/http/directory=/debian  debian-installer/allow_unauthenticated=true ip=dhcp
+initrd http://192.168.1.1/debian/7/initrd
+boot
+
+:debian8
+kernel http://192.168.1.1/debian/8/linux initrd=initrd mirror/country=manual mirror/http/hostname=archive.debian.org mirror/http/directory=/debian  debian-installer/allow_unauthenticated=true ip=dhcp
+initrd http://192.168.1.1/debian/8/initrd
+boot
+
+:debian9
+kernel http://192.168.1.1/debian/9/linux initrd=initrd mirror/country=manual mirror/http/hostname=archive.debian.org mirror/http/directory=/debian  debian-installer/allow_unauthenticated=true ip=dhcp
+initrd http://192.168.1.1/debian/9/initrd
+boot
+
+:debian10
+kernel http://192.168.1.1/debian/10/linux initrd=initrd mirror/country=manual mirror/http/hostname=archive.debian.org mirror/http/directory=/debian  debian-installer/allow_unauthenticated=true ip=dhcp
+initrd http://192.168.1.1/debian/10/initrd
+boot
+
+:debian11
+kernel http://192.168.1.1/debian/11/linux initrd=initrd mirror/country=manual mirror/http/hostname=archive.debian.org mirror/http/directory=/debian  debian-installer/allow_unauthenticated=true ip=dhcp
+initrd http://192.168.1.1/debian/11/initrd
+boot
+
+:debian12
+kernel http://192.168.1.1/debian/12/linux initrd=initrd mirror/country=manual mirror/http/hostname=ftp.fi.debian.org mirror/http/directory=/debian  ip=dhcp
+initrd http://192.168.1.1/debian/12/initrd
+boot
+
+:debian13
+kernel http://192.168.1.1/debian/13/linux initrd=initrd mirror/country=manual mirror/http/hostname=ftp.fi.debian.org mirror/http/directory=/debian  ip=dhcp
+initrd http://192.168.1.1/debian/13/initrd
+boot
+
+:noble
+set ubuntuver noble
+set nfsroot /srv/nfs/ubuntu2404
+goto casperboot
+
+:jammy
+set ubuntuver jammy
+set nfsroot /srv/nfs/ubuntu2204
+goto casperboot
+
+:focal
+set ubuntuver focal
+set nfsroot /srv/nfs/ubuntu2004
+set extraargs fsck.mode=skip
+goto casperboot
+
+:bionic
+set ubuntuver bionic
+set nfsroot /srv/nfs/ubuntu1804
+goto casperboot
+
+:xenial
+set ubuntuver xenial
+set nfsroot /srv/nfs/ubuntu1604
+goto casperboot
+
+:trusty
+set ubuntuver trusty
+set nfsroot /srv/nfs/ubuntu1404
+goto casperboot
+
+:precise
+set ubuntuver precise
+set nfsroot /srv/nfs/ubuntu1204
+goto casperboot
+
+:lucid
+set ubuntuver lucid
+set nfsroot /srv/nfs/ubuntu1004
+goto casperboot
+
+:hardy
+set ubuntuver hardy
+set nfsroot /srv/nfs/ubuntu804
+goto casperboot
+
+:casperboot
+kernel http://192.168.1.1/ubuntu/${ubuntuver}/linux initrd=initrd ${extraargs} netboot=nfs boot=casper ip=dhcp nfsroot=192.168.1.1:${nfsroot}
+initrd http://192.168.1.1/ubuntu/${ubuntuver}/initrd
+boot
+
+
+#:dapper
+#kernel http://192.168.1.1/ubuntu/hardy/linux netboot=nfs boot=casper ip=dhcp nfsroot=192.168.1.1:/srv/nfs/ubuntu606
+#initrd http://192.168.1.1/ubuntu/hardy/initrd
+#boot - maybe later.
+
+#:arch
+#kernel https://archlinux.org/static/netboot/ipxe-arch.lkrn
+#boot - won't work unless it's figured out how to boot it from ours
